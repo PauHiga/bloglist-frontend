@@ -47,18 +47,18 @@ describe('Blog app', function () {
         cy.addBlog({ title:'Second top blog', author:'me', url:'url2' })
       })
 
-      it.only('the blog with more likes is displayed on top', function(){
-        cy.contains('First top blog').parent().contains('Show details').click()
-        cy.contains('Second top blog').parent().contains('Show details').click()
-        cy.contains('First top blog').parent().contains('like').click()
-        cy.contains('First top blog').parent().contains('Likes: 1')
-        cy.get('.blog-box').eq(0).contains('First top blog')
-        cy.contains('Second top blog').parent().contains('like').click()
-        cy.contains('Second top blog').parent().contains('Likes: 1')
-        cy.contains('Second top blog').parent().contains('like').click()
-        cy.contains('Second top blog').parent().contains('Likes: 1')
-        cy.get('.blog-box').eq(0).contains('Second top blog')
-      })
+      it.only("the blog with more likes is displayed on top", function () {
+        cy.contains("First top blog - me").parent().contains("Show details").click();
+        cy.contains("Second top blog - me").parent().contains("Show details").click();
+        cy.contains("First top blog - me").parent().contains("like").click();
+        cy.contains("First top blog - me").parent().contains("Likes: 1");
+        cy.get(".blog-box").eq(0).contains("First top blog");
+        cy.contains("Second top blog - me").parent().contains("like").click();
+        cy.contains("Second top blog - me").parent().contains("Likes: 1");
+        cy.contains("Second top blog - me").parent().contains("like").click();
+        cy.contains("Second top blog - me").parent().contains("Likes: 2");
+        cy.get(".blog-box").eq(0).contains("Second top blog");
+      });
     })
 
     describe('and a blog with zero likes is created', function(){
