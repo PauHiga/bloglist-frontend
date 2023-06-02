@@ -5,12 +5,10 @@ import { useMutation, useQueryClient } from 'react-query'
 import { updateLikes } from '../requestBlogs'
 import NotificationContext from '../context/notificationContext'
 
-
 const BlogInfo = ({blogs, userData}) => {
   const id = useParams().id
   const selectedBlog = blogs.find(item => item.id === id)
   const [notification, notificationDispatch] = useContext(NotificationContext)
-  console.log(selectedBlog);
 
   const queryClient = useQueryClient()
 

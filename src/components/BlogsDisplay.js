@@ -8,10 +8,11 @@ import FormCreate from '../components/FormCreate'
 import NotificationContext from '../context/notificationContext'
 
 const BlogsDisplay = ({blogs, userData}) => {
-  const notificationDispatch = useContext(NotificationContext)
+  const [notification, notificationDispatch] = useContext(NotificationContext)
   const queryClient = useQueryClient()
 
   const createNewBlogMutation = useMutation(createNewBlog, {onSuccess: (newBlog) => {
+    
     notificationDispatch({type: 'MESSAGE', payload: 'Blog added to the list!'})
     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     const blogs = queryClient.getQueryData('blogs')
