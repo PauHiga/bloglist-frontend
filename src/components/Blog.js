@@ -31,7 +31,7 @@ const Blog = ({ blog, handleLike, user, handleDelete }) => {
           <li>Creator: {blog.creator.user}</li>
           <li>Likes: {blog.likes} <button onClick={() =>  handleLike(updatedBlog, blog.id)}>like</button></li>
         </ul>
-        {user.data.username === blog.creator.username ? <button onClick={confirmDelete} style={{ fontSize:12 }}>Delete blog</button> : ''}
+        {user.username === blog.creator.username ? <button onClick={confirmDelete} style={{ fontSize:12 }}>Delete blog</button> : ''}
       </div>
 
     </div>

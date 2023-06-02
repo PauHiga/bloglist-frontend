@@ -12,8 +12,7 @@ const createBlogEntry = async (title, author, url, user) => {
     author:author,
     url:url
   }
-
-  const authorization = 'Bearer ' + user.data.token
+  const authorization = 'Bearer ' + user.token
   const config = { headers:{ 'Authorization':authorization } }
   const response = await axios.post(baseUrl, body, config)
   return response
@@ -29,14 +28,14 @@ const updateLikes = async (updatedBlog, blogId, user) => {
     creator:updatedBlog.creator
   }
 
-  const authorization = 'Bearer ' + user.data.token
+  const authorization = 'Bearer ' + user.token
   const config = { headers:{ 'Authorization':authorization } }
   const response = await axios.put(baseUrl + '/' + blogId, body, config)
   return response
 }
 
 const deleteBlog = async (blogId, user) => {
-  const authorization = 'Bearer ' + user.data.token
+  const authorization = 'Bearer ' + user.token
   const config = { headers:{ 'Authorization':authorization } }
   const response = await axios.delete(baseUrl + '/' + blogId, config)
   return response

@@ -1,28 +1,26 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from 'react-query'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import FormLogin from './components/FormLogin'
 import FormCreate from './components/FormCreate'
 import Togglable from './components/Togglable'
+import { getBlogs } from './request'
 import './App.css'
 
+import { useContext } from 'react'
+import NotificationContext from './context/notificationContext'
+
 const App = ()  =>  {
-  const [blogs, setBlogs] = useState([])
+  const [notification, notificationDispatch] = useContext(NotificationContext)
+
   const [refresh, setRefresh] = useState(0)
-  const [messageOfBox, setMessageOfBox] = useState('')
-  const [messageType, setMessageType] = useState('message')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
-  useEffect(()  =>  {
-    blogService
-      .getAll()
-      .then(blogs  => {
-        setBlogs( blogs )
-      })
-  }, [refresh])
+  const result = useQuery('blogs', getBlogs)
 
   useEffect(() => {
     const localUser = window.localStorage.getItem('loggedBloglistAppUser')
@@ -36,18 +34,15 @@ const App = ()  =>  {
     event.preventDefault()
     try {
       const user = await loginService.login({ username, password })
-      setUser(user)
-      console.log('user', user)
-      window.localStorage.setItem('loggedBloglistAppUser', JSON.stringify(user))
+      setUser(user.data)
+      window.localStorage.setItem('loggedBloglistAppUser', JSON.stringify(user.data))
       setUsername('')
       setPassword('')
-      setMessageType('message')
-      setMessageOfBox('Successful login!')
-      setTimeout(() => {setMessageOfBox('')}, 3000)
+      notificationDispatch({type: 'MESSAGE', payload: 'Successful login!'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     } catch(exception) {
-      setMessageType('error-message')
-      setMessageOfBox('Wrong username or password')
-      setTimeout(() => {setMessageOfBox('')}, 3000)
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'Wrong username or password'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     }
   }
 
@@ -58,55 +53,65 @@ const App = ()  =>  {
 
   const handleCreate = async (title, author, url)  =>  {
     try{
+      console.log(title);
       const response = await blogService.createBlogEntry(title, author, url, user)
-
-      setMessageType('message')
-      setMessageOfBox('The blog "' + response.data.title + '" was successfully added to the list')
-      setTimeout(() => {setMessageOfBox('')}, 5000)
+      notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + response.data.title + '" was successfully added to the list'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
       setRefresh(refresh+1)
     } catch (exception){
-      setMessageType('error-message')
-      setMessageOfBox('User not authorized')
-      setTimeout(() => {setMessageOfBox('')}, 3000)
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'error creating entry'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     }
   }
 
   const handleLike = async (updatedBlog, blogId)  => {
     try{
       await blogService.updateLikes(updatedBlog, blogId, user)
+      notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + updatedBlog.title + '" was liked'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
       setRefresh(refresh+1)
     } catch(exception){
-      setMessageType('error-message')
-      setMessageOfBox('Error adding new likes')
-      setTimeout(() => {setMessageOfBox('')}, 3000)
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'Error adding new likes'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     }
   }
 
   const handleDelete = async (blogId)  => {
     try{
       await blogService.deleteBlog(blogId, user)
+      notificationDispatch({type: 'MESSAGE', payload: 'Blog deleted'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
       setRefresh(refresh+1)
     }catch (exception){
-      setMessageType('error-message')
-      setMessageOfBox('Error deleting blog')
-      setTimeout(() => {setMessageOfBox('')}, 3000)
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'Error deleting blog'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     }
   }
+
+  if ( result.isLoading ) {
+    return <div>loading data...</div>
+  }
+
+  const blogs = result.data
 
   return (
     <div>
       <h2>blogs</h2>
-      {messageOfBox
-        ? <div className={messageType}>{messageOfBox}</div>
+      {notification.notification
+        ? <div className={notification.message_type}>{notification.notification}</div>
         : ''
       }
+      {/* {messageOfBox
+        ? <div className={messageType}>{messageOfBox}</div>
+        : ''
+      } */}
 
       {user === null && <FormLogin username={username} setUsername={setUsername} password={password} setPassword={setPassword} handleLogin={handleLogin}/>
       }
 
       {user !== null &&
           <div>
-            {user.data.user} is logged in
+            {user.user} is logged in
             <br />
             <button onClick={handleLogout}>Logout</button>
             <br />
