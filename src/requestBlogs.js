@@ -19,6 +19,9 @@ export const createNewBlog = ({title, author, url, userData}) => {
 }
 
 export const updateLikes = ({updatedBlog, blogId, userData}) => {
+  console.log(updatedBlog);
+  console.log(blogId);
+  console.log(userData);
 
   const body = {
     title:updatedBlog.title,
