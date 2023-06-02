@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useQuery } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import FormLogin from './components/FormLogin'
 import FormCreate from './components/FormCreate'
 import Togglable from './components/Togglable'
-import { getBlogs } from './request'
+import { getBlogs, createNewBlog } from './request'
 import './App.css'
 
 import { useContext } from 'react'
@@ -14,13 +14,25 @@ import NotificationContext from './context/notificationContext'
 
 const App = ()  =>  {
   const [notification, notificationDispatch] = useContext(NotificationContext)
-
+  
   const [refresh, setRefresh] = useState(0)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  
+  const queryClient = useQueryClient()
 
   const result = useQuery('blogs', getBlogs)
+  const createNewBlogMutation = useMutation(createNewBlog, {onSuccess: () => {
+    notificationDispatch({type: 'MESSAGE', payload: 'Blog added to the list!'})
+    setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    queryClient.invalidateQueries('blogs')}, 
+    onError: () => {
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error and the new blog was not added to the list'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    }
+  })
+
 
   useEffect(() => {
     const localUser = window.localStorage.getItem('loggedBloglistAppUser')
@@ -52,17 +64,21 @@ const App = ()  =>  {
   }
 
   const handleCreate = async (title, author, url)  =>  {
-    try{
-      console.log(title);
-      const response = await blogService.createBlogEntry(title, author, url, user)
-      notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + response.data.title + '" was successfully added to the list'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-      setRefresh(refresh+1)
-    } catch (exception){
-      notificationDispatch({type: 'ERRORMESSAGE', payload: 'error creating entry'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-    }
+      createNewBlogMutation.mutate({title, author, url, user})
   }
+
+  // const handleCreate = async (title, author, url)  =>  {
+  //   try{
+  //     console.log(title);
+  //     const response = await blogService.createBlogEntry(title, author, url, user)
+  //     notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + response.data.title + '" was successfully added to the list'})
+  //     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+  //     setRefresh(refresh+1)
+  //   } catch (exception){
+  //     notificationDispatch({type: 'ERRORMESSAGE', payload: 'error creating entry'})
+  //     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+  //   }
+  // }
 
   const handleLike = async (updatedBlog, blogId)  => {
     try{
