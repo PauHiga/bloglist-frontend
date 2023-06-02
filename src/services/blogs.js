@@ -34,6 +34,7 @@ const updateLikes = async (updatedBlog, blogId, user) => {
   return response
 }
 
+
 const deleteBlog = async (blogId, user) => {
   const authorization = 'Bearer ' + user.token
   const config = { headers:{ 'Authorization':authorization } }

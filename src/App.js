@@ -1,38 +1,64 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import Blog from './components/Blog'
-import blogService from './services/blogs'
 import loginService from './services/login'
 import FormLogin from './components/FormLogin'
 import FormCreate from './components/FormCreate'
 import Togglable from './components/Togglable'
-import { getBlogs, createNewBlog } from './request'
+import { getBlogs, createNewBlog, updateLikes, deleteBlog } from './request'
 import './App.css'
 
 import { useContext } from 'react'
 import NotificationContext from './context/notificationContext'
+import UserContext from './context/userContext'
 
 const App = ()  =>  {
   const [notification, notificationDispatch] = useContext(NotificationContext)
-  
-  const [refresh, setRefresh] = useState(0)
+  const [userData, userDispatch] = useContext(UserContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   
   const queryClient = useQueryClient()
 
-  const result = useQuery('blogs', getBlogs)
-  const createNewBlogMutation = useMutation(createNewBlog, {onSuccess: () => {
+  const result = useQuery('blogs', getBlogs, {refetchOnWindowFocus: false})
+
+  const createNewBlogMutation = useMutation(createNewBlog, {onSuccess: (newBlog) => {
     notificationDispatch({type: 'MESSAGE', payload: 'Blog added to the list!'})
     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-    queryClient.invalidateQueries('blogs')}, 
+    const blogs = queryClient.getQueryData('blogs')
+    queryClient.setQueryData('blogs', blogs.concat({...newBlog.data, creator: {id: newBlog.data.creator, user: user.user, username: user.username}}))
+  }, 
     onError: () => {
       notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error and the new blog was not added to the list'})
       setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     }
   })
 
+  const updateLikesMutation = useMutation(updateLikes, {onSuccess: (updatedBlog) => 
+    {
+    notificationDispatch({type: 'MESSAGE', payload: 'Liked!'})
+    setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    const blogs = queryClient.getQueryData('blogs')
+    queryClient.setQueryData('blogs', blogs.map(item => item.id === updatedBlog.data.id ? {...updatedBlog.data, creator: {id: updatedBlog.data.creator, user: user.user, username: user.username}} : item))
+    }, 
+    onError: () => {
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error adding the new like'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    }
+  })
+
+  const deleteBlogMutation = useMutation(deleteBlog, {onSuccess: () => 
+    {
+    notificationDispatch({type: 'MESSAGE', payload: 'Blog deleted'})
+    setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    queryClient.invalidateQueries('blogs')
+    }, 
+    onError: () => {
+      notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error deleting the blog'})
+      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
+    }
+  })
 
   useEffect(() => {
     const localUser = window.localStorage.getItem('loggedBloglistAppUser')
@@ -67,41 +93,12 @@ const App = ()  =>  {
       createNewBlogMutation.mutate({title, author, url, user})
   }
 
-  // const handleCreate = async (title, author, url)  =>  {
-  //   try{
-  //     console.log(title);
-  //     const response = await blogService.createBlogEntry(title, author, url, user)
-  //     notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + response.data.title + '" was successfully added to the list'})
-  //     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-  //     setRefresh(refresh+1)
-  //   } catch (exception){
-  //     notificationDispatch({type: 'ERRORMESSAGE', payload: 'error creating entry'})
-  //     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-  //   }
-  // }
-
   const handleLike = async (updatedBlog, blogId)  => {
-    try{
-      await blogService.updateLikes(updatedBlog, blogId, user)
-      notificationDispatch({type: 'MESSAGE', payload: 'The blog "' + updatedBlog.title + '" was liked'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-      setRefresh(refresh+1)
-    } catch(exception){
-      notificationDispatch({type: 'ERRORMESSAGE', payload: 'Error adding new likes'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-    }
+      updateLikesMutation.mutate({updatedBlog, blogId, user})
   }
 
   const handleDelete = async (blogId)  => {
-    try{
-      await blogService.deleteBlog(blogId, user)
-      notificationDispatch({type: 'MESSAGE', payload: 'Blog deleted'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-      setRefresh(refresh+1)
-    }catch (exception){
-      notificationDispatch({type: 'ERRORMESSAGE', payload: 'Error deleting blog'})
-      setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
-    }
+    deleteBlogMutation.mutate({blogId, user})
   }
 
   if ( result.isLoading ) {
@@ -117,10 +114,6 @@ const App = ()  =>  {
         ? <div className={notification.message_type}>{notification.notification}</div>
         : ''
       }
-      {/* {messageOfBox
-        ? <div className={messageType}>{messageOfBox}</div>
-        : ''
-      } */}
 
       {user === null && <FormLogin username={username} setUsername={setUsername} password={password} setPassword={setPassword} handleLogin={handleLogin}/>
       }

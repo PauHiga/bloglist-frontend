@@ -14,7 +14,6 @@ const Blog = ({ blog, handleLike, user, handleDelete }) => {
 
   const confirmDelete = () => {
     if (window.confirm(`Remove blog '${blog.title}'?`)) {
-      console.log('delete confirmed')
       handleDelete(blog.id)
     }
   }
