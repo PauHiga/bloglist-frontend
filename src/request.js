@@ -6,19 +6,19 @@ export const getBlogs = () => {
   return axios.get(baseUrl).then(res => res.data)
 }
 
-export const createNewBlog = ({title, author, url, user}) => {
-  console.log(author)
+export const createNewBlog = ({title, author, url, userData}) => {
+  console.log(userData)
   const body = {
     title:title,
     author:author,
     url:url
   }
-  const authorization = 'Bearer ' + user.token
+  const authorization = 'Bearer ' + userData.token
   const config = { headers:{ 'Authorization':authorization } }
   return axios.post(baseUrl, body, config)
 }
 
-export const updateLikes = ({updatedBlog, blogId, user}) => {
+export const updateLikes = ({updatedBlog, blogId, userData}) => {
 
   const body = {
     title:updatedBlog.title,
@@ -28,13 +28,13 @@ export const updateLikes = ({updatedBlog, blogId, user}) => {
     creator:updatedBlog.creator
   }
 
-  const authorization = 'Bearer ' + user.token
+  const authorization = 'Bearer ' + userData.token
   const config = { headers:{ 'Authorization':authorization } }
   return axios.put(baseUrl + '/' + blogId, body, config)
 }
 
-export const deleteBlog = ({blogId, user}) => {
-  const authorization = 'Bearer ' + user.token
+export const deleteBlog = ({blogId, userData}) => {
+  const authorization = 'Bearer ' + userData.token
   const config = { headers:{ 'Authorization':authorization } }
   return axios.delete(baseUrl + '/' + blogId, config)
 }

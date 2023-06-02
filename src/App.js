@@ -17,7 +17,6 @@ const App = ()  =>  {
   const [userData, userDispatch] = useContext(UserContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
   
   const queryClient = useQueryClient()
 
@@ -27,7 +26,7 @@ const App = ()  =>  {
     notificationDispatch({type: 'MESSAGE', payload: 'Blog added to the list!'})
     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     const blogs = queryClient.getQueryData('blogs')
-    queryClient.setQueryData('blogs', blogs.concat({...newBlog.data, creator: {id: newBlog.data.creator, user: user.user, username: user.username}}))
+    queryClient.setQueryData('blogs', blogs.concat({...newBlog.data, creator: {id: newBlog.data.creator, user: userData.user, username: userData.username}}))
   }, 
     onError: () => {
       notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error and the new blog was not added to the list'})
@@ -40,7 +39,7 @@ const App = ()  =>  {
     notificationDispatch({type: 'MESSAGE', payload: 'Liked!'})
     setTimeout(() => {notificationDispatch({type: 'BLANKMESSAGE'})}, 3000)
     const blogs = queryClient.getQueryData('blogs')
-    queryClient.setQueryData('blogs', blogs.map(item => item.id === updatedBlog.data.id ? {...updatedBlog.data, creator: {id: updatedBlog.data.creator, user: user.user, username: user.username}} : item))
+    queryClient.setQueryData('blogs', blogs.map(item => item.id === updatedBlog.data.id ? {...updatedBlog.data, creator: {id: updatedBlog.data.creator, user: userData.user, username: userData.username}} : item))
     }, 
     onError: () => {
       notificationDispatch({type: 'ERRORMESSAGE', payload: 'There was an error adding the new like'})
@@ -64,7 +63,7 @@ const App = ()  =>  {
     const localUser = window.localStorage.getItem('loggedBloglistAppUser')
     if(localUser){
       const parseUser = JSON.parse(localUser)
-      setUser(parseUser)
+      userDispatch({type: 'SETUSER', payload: parseUser})
     }
   }, [])
 
@@ -72,7 +71,7 @@ const App = ()  =>  {
     event.preventDefault()
     try {
       const user = await loginService.login({ username, password })
-      setUser(user.data)
+      userDispatch({type: 'SETUSER', payload: user.data})
       window.localStorage.setItem('loggedBloglistAppUser', JSON.stringify(user.data))
       setUsername('')
       setPassword('')
@@ -86,19 +85,20 @@ const App = ()  =>  {
 
   const handleLogout = ()  =>  {
     window.localStorage.removeItem('loggedBloglistAppUser')
-    setUser(null)
+    userDispatch({type: 'SETUSER', payload: null})
   }
 
   const handleCreate = async (title, author, url)  =>  {
-      createNewBlogMutation.mutate({title, author, url, user})
+    console.log(userData);
+      createNewBlogMutation.mutate({title, author, url, userData})
   }
 
   const handleLike = async (updatedBlog, blogId)  => {
-      updateLikesMutation.mutate({updatedBlog, blogId, user})
+      updateLikesMutation.mutate({updatedBlog, blogId, userData})
   }
 
   const handleDelete = async (blogId)  => {
-    deleteBlogMutation.mutate({blogId, user})
+    deleteBlogMutation.mutate({blogId, userData})
   }
 
   if ( result.isLoading ) {
@@ -115,12 +115,12 @@ const App = ()  =>  {
         : ''
       }
 
-      {user === null && <FormLogin username={username} setUsername={setUsername} password={password} setPassword={setPassword} handleLogin={handleLogin}/>
+      {userData === null && <FormLogin username={username} setUsername={setUsername} password={password} setPassword={setPassword} handleLogin={handleLogin}/>
       }
 
-      {user !== null &&
+      {userData !== null &&
           <div>
-            {user.user} is logged in
+            {userData.user} is logged in
             <br />
             <button onClick={handleLogout}>Logout</button>
             <br />
@@ -130,7 +130,7 @@ const App = ()  =>  {
             </Togglable>
             <br />
             {blogs.sort((a, b) => {let keyA = a.likes; let keyB = b.likes; if(keyA>keyB){return -1} else if(keyA<keyB){return 1} else{return 0} }).map(blog  =>
-              <Blog key={blog.id} blog={blog} handleLike={handleLike} user={user} handleDelete={handleDelete}/>)}
+              <Blog key={blog.id} blog={blog} handleLike={handleLike} user={userData} handleDelete={handleDelete}/>)}
           </div>
       }
 
