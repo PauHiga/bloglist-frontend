@@ -15,7 +15,7 @@ import { getUsers } from './requestUsers'
 import BlogsDisplay from './components/BlogsDisplay'
 import BlogInfo from './components/BlogInfo'
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import Users from './components/Users'
 import UserInfo from './components/UserInfo'
 import './App.css'
@@ -123,8 +123,10 @@ const App = ()  =>  {
 
   return (
     <div>
+      <Router>
+        <Link to={"/"}>Blogs</Link><Link to={"/users"}>Users</Link>
+
       <div>
-        <h2>blogs</h2>
         {notification.notification
           ? <div className={notification.message_type}>{notification.notification}</div>
           : ''
@@ -136,22 +138,15 @@ const App = ()  =>  {
         {userData !== null &&
             <div>
               {userData.user} is logged in
-              <br />
               <button onClick={handleLogout}>Logout</button>
               <br />
               <br />
-              {/* <Togglable buttonText={'Add New Blog'}>
-                <FormCreate create={handleCreate}/>
-              </Togglable>
-              <br />
-              {blogs.sort((a, b) => {let keyA = a.likes; let keyB = b.likes; if(keyA>keyB){return -1} else if(keyA<keyB){return 1} else{return 0} }).map(blog  =>
-                <Blog key={blog.id} blog={blog} handleLike={handleLike} user={userData} handleDelete={handleDelete}/>)} */}
             </div>
         }
 
+        <h2>Blogs App</h2>
       </div>
-
-      <Router>
+      
         <Routes>
           <Route path='/users' element={<Users users={users}/>} />
           <Route path='/users/:id' element={<UserInfo users={users}/>} />
