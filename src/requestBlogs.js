@@ -6,6 +6,10 @@ export const getBlogs = () => {
   return axios.get(baseUrl).then(res => res.data)
 }
 
+export const getComments = (id) => {
+  return axios.get(baseUrl + '/' + id + '/comments').then(res => res.data)
+}
+
 export const createNewBlog = ({title, author, url, userData}) => {
   const body = {
     title:title,
@@ -15,6 +19,15 @@ export const createNewBlog = ({title, author, url, userData}) => {
   const authorization = 'Bearer ' + userData.token
   const config = { headers:{ 'Authorization':authorization } }
   return axios.post(baseUrl, body, config)
+}
+
+export const createComment = ({id, commentInput, userData}) => {
+  const body = {
+    content:commentInput
+  }
+  const authorization = 'Bearer ' + userData.token
+  const config = { headers:{ 'Authorization':authorization } }
+  return axios.post(baseUrl + '/' + id + '/comments', body, config).then(res => res.data)
 }
 
 export const updateLikes = ({updatedBlog, blogId, userData}) => {
