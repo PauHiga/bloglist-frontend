@@ -3,11 +3,11 @@ import { createContext, useReducer } from 'react'
 const notificationReducer = (state, action) => {
   switch (action.type){
     case 'MESSAGE':
-      return {message_type: 'message', notification: action.payload} 
+      return {message_type: 'success', notification: action.payload} 
     case 'ERRORMESSAGE':
-      return {message_type: 'error-message', notification: action.payload}
+      return {message_type: 'danger', notification: action.payload}
     case 'BLANKMESSAGE':
-      return {message_type: 'message', notification: ''}    
+      return {message_type: 'success', notification: ''}    
     default:
       return state
   }

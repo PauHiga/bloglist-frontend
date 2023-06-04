@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Form from 'react-bootstrap/Form';
 
 const FormCreate = ({  create  }) => {
 
@@ -16,21 +17,34 @@ const FormCreate = ({  create  }) => {
 
   return(
     <div>
-      <h3>Add new blog</h3>
-      <form type='submit'>
-        <ul>
-          <li>
-            title: <input type='text' id='input-title' value={title} name='Title' placeholder="write the blog's title here" onChange={({ target }) => {setTitle(target.value)}}/>
-          </li>
-          <li>
-            author: <input type='text' id='input-author' value={author} name='author' placeholder="write the blog's author here" onChange={({ target }) => {setAuthor(target.value)}}/>
-          </li>
-          <li>
-            url: <input type="text" id='input-url' value={url} name="url" placeholder="write the blog's url here"onChange={({ target }) => {setUrl(target.value)}}/>
-          </li>
-        </ul>
+      <h2 className="py-1 display-6">Add new blog</h2>
+      <Form>
+      <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Title: </Form.Label>
+        <Form.Control value={title} name='Title' placeholder="write the blog's title here" onChange={({ target }) => {setTitle(target.value)}}/>
+        <Form.Text className="text-muted">
+        write the blog&apos;s title here
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formBasicPassword">
+        <Form.Label>Author: </Form.Label>
+        <Form.Control value={author} name='author' placeholder="write the blog's author here" onChange={({ target }) => {setAuthor(target.value)}}/>
+        <Form.Text className="text-muted">
+        write the blog&apos;s author here
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formBasicPassword">
+        <Form.Label>Url: </Form.Label>
+        <Form.Control value={url} name="url" placeholder="write the blog's url here"onChange={({ target }) => {setUrl(target.value)}}/>
+        <Form.Text className="text-muted">
+        write the blog&apos;s url here
+        </Form.Text>
+      </Form.Group>
         <div><button onClick={handleCreate2}>Create</button></div>
-      </form>
+    </Form>
+
     </div>
   )
 }

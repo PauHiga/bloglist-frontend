@@ -1,11 +1,15 @@
 import React from 'react'
+import Accordion from 'react-bootstrap/Accordion';
+import { useAccordionButton } from 'react-bootstrap/AccordionButton';
+import Card from 'react-bootstrap/Card';
+import ListGroup from 'react-bootstrap/ListGroup';
 import { Link } from 'react-router-dom'
 import { useContext } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { createNewBlog } from '../requestBlogs'
-import Togglable from '../components/Togglable'
 import FormCreate from '../components/FormCreate'
 import NotificationContext from '../context/notificationContext'
+
 
 const BlogsDisplay = ({blogs, userData}) => {
   const contextNotif = useContext(NotificationContext)
@@ -28,17 +32,45 @@ const BlogsDisplay = ({blogs, userData}) => {
     createNewBlogMutation.mutate({title, author, url, userData})
   }
 
+
+
+  function CustomToggle({ children, eventKey }) {
+    const decoratedOnClick = useAccordionButton(eventKey);
+
+    return (
+      <button
+        type="button"
+        style={{ backgroundColor: 'white' }}
+        onClick={decoratedOnClick}
+      >
+        {children}
+      </button>
+    );
+  }
+
+
+
   return (
     <div>
-        <Togglable buttonText={'Add New Blog'}>
-          <FormCreate create={handleCreate}/>
-        </Togglable>
+      <Accordion>
+        <Card>
+          <Card.Header>
+            <CustomToggle eventKey="0">Add New Blog</CustomToggle>
+          </Card.Header>
+          <Accordion.Collapse eventKey="0">
+            <Card.Body><FormCreate create={handleCreate}/></Card.Body>
+          </Accordion.Collapse>
+        </Card>
+      </Accordion>
+
         <br />
-        {blogs.sort((a, b) => {let keyA = a.likes; let keyB = b.likes; if(keyA>keyB){return -1} else if(keyA<keyB){return 1} else{return 0} }).map(blog => <div key={blog.id}>
+        <ListGroup>
+        {blogs.sort((a, b) => {let keyA = a.likes; let keyB = b.likes; if(keyA>keyB){return -1} else if(keyA<keyB){return 1} else{return 0} }).map(blog => <ListGroup.Item key={blog.id}>
           <Link to={`/blogs/${blog.id}`}>
            {blog.title} 
            </Link>   
-           </div>)}
+           </ListGroup.Item>)}
+        </ListGroup>
     </div>
   )
 }
